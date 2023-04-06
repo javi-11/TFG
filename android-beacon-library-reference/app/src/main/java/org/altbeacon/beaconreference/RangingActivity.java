@@ -50,13 +50,17 @@ public class RangingActivity extends Activity {
 
         };
         beaconManager.addRangeNotifier(rangeNotifier);
-        beaconManager.startRangingBeacons(BeaconReferenceApplication.wildcardRegion);
+        beaconManager.startRangingBeacons(BeaconReferenceApplication.region1);
+        beaconManager.startRangingBeacons(BeaconReferenceApplication.region2);
+        beaconManager.startRangingBeacons(BeaconReferenceApplication.region3);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        beaconManager.stopRangingBeacons(BeaconReferenceApplication.wildcardRegion);
+        beaconManager.stopRangingBeacons(BeaconReferenceApplication.region1);
+        beaconManager.stopRangingBeacons(BeaconReferenceApplication.region2);
+        beaconManager.stopRangingBeacons(BeaconReferenceApplication.region3);
         beaconManager.removeAllRangeNotifiers();
     }
 
