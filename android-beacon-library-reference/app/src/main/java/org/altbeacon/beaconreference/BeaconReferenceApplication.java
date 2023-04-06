@@ -14,6 +14,7 @@ import android.util.Log;
 
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.logging.LogManager;
@@ -24,7 +25,10 @@ import org.altbeacon.beacon.service.MonitoringStatus;
  */
 public class BeaconReferenceApplication extends Application implements MonitorNotifier {
     private static final String TAG = "BeaconReferenceApp";
-    public static final Region wildcardRegion = new Region("wildcardRegion", null, null, null);
+    //public static final Region wildcardRegion = new Region("wildcardRegion", null,null,null);
+    public static final Region region1 = new Region("whiteRegion", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
+    public static final Region region2 = new Region("blueRegion", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
+    public static final Region region3 = new Region("mintRegion", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
     public static boolean insideRegion = false;
 
     public void onCreate() {
@@ -52,7 +56,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // communicate to users that your app is using resources in the background.
         //
 
-        /*
+
         Notification.Builder builder = new Notification.Builder(this);
         builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setContentTitle("Scanning for Beacons");
@@ -80,7 +84,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         beaconManager.setBackgroundBetweenScanPeriod(0);
         beaconManager.setBackgroundScanPeriod(1100);
 
-        */
+
 
 
         Log.d(TAG, "setting up background monitoring in app onCreate");
@@ -92,7 +96,9 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
             beaconManager.stopMonitoring(region);
         }
 
-        beaconManager.startMonitoring(wildcardRegion);
+        beaconManager.startMonitoring(region1);
+        beaconManager.startMonitoring(region2);
+        beaconManager.startMonitoring(region3);
 
         // If you wish to test beacon detection in the Android Emulator, you can use code like this:
         // BeaconManager.setBeaconSimulator(new TimedBeaconSimulator() );
@@ -106,13 +112,14 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // Send a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
         Log.d(TAG, "Sending notification.");
-        sendNotification();
+        sendNotification("Entrando en la región" + arg0.getUniqueId());
     }
 
     @Override
     public void didExitRegion(Region region) {
         insideRegion = false;
         // do nothing here. logging happens in MonitoringActivity
+        sendNotification("Saliendo de la región" + region.getUniqueId());
     }
 
     @Override
@@ -120,7 +127,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // do nothing here. logging happens in MonitoringActivity
     }
 
-    private void sendNotification() {
+    private void sendNotification(String text) {
         NotificationManager notificationManager =
                 (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder builder;
@@ -146,7 +153,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         builder.setSmallIcon(R.drawable.ic_launcher);
-        builder.setContentTitle("I detect a beacon");
+        builder.setContentTitle(text);
         builder.setContentText("Tap here to see details in the reference app");
         builder.setContentIntent(resultPendingIntent);
         notificationManager.notify(1, builder.build());

@@ -37,7 +37,7 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		verifyBluetooth();
 		requestPermissions();
 		beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
-		Region region = new Region("all-beacons-region", null, null, null);
+		//Region region = new Region("all-beacons-region", null, null, null);
 		// No need to start monitoring here because we already did it in
 		// BeaconReferenceApplication.onCreate
 		// check if we are currently inside or outside of that region to update the display
@@ -180,11 +180,18 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		// This is a toggle.  Each time we tap it, we start or stop
 		Button button = (Button) findViewById(R.id.enableButton);
 		if (BeaconManager.getInstanceForApplication(this).getMonitoredRegions().size() > 0) {
-			BeaconManager.getInstanceForApplication(this).stopMonitoring(BeaconReferenceApplication.wildcardRegion);
+			//BeaconManager.getInstanceForApplication(this).stopMonitoring(BeaconReferenceApplication.wildcardRegion);
+			BeaconManager.getInstanceForApplication(this).stopMonitoring(BeaconReferenceApplication.region1);
+			BeaconManager.getInstanceForApplication(this).stopMonitoring(BeaconReferenceApplication.region2);
+			BeaconManager.getInstanceForApplication(this).stopMonitoring(BeaconReferenceApplication.region3);
 			button.setText("Enable Monitoring");
 		}
 		else {
-			BeaconManager.getInstanceForApplication(this).startMonitoring(BeaconReferenceApplication.wildcardRegion);
+			//BeaconManager.getInstanceForApplication(this).startMonitoring(BeaconReferenceApplication.wildcardRegion);
+			BeaconManager.getInstanceForApplication(this).startMonitoring(BeaconReferenceApplication.region1);
+			BeaconManager.getInstanceForApplication(this).startMonitoring(BeaconReferenceApplication.region2);
+			BeaconManager.getInstanceForApplication(this).startMonitoring(BeaconReferenceApplication.region3);
+
 			button.setText("Disable Monitoring");
 		}
 	}

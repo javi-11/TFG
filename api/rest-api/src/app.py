@@ -1,16 +1,26 @@
+
 from datetime import datetime
+
 from flask import Flask, request, jsonify, Response
 from flask_pymongo import PyMongo 
 from bson import json_util
 from bson.objectid import ObjectId
 import pymongo
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 from werkzeug.security import generate_password_hash
 
 
 app = Flask(__name__)
-app.config['MONGO_URI']='mongodb://localhost:27017/tfg'
 
-mongo = PyMongo(app)
+app.config["SECRET_KEY"] = "i7f3DyCMKFpWy66QrUod"
+app.config["MONGO_URI"] = "mongodb+srv://javit:<f6dFZDZsA4M0rTz8>@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority"
+
+client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority",server_api=ServerApi('1'))
+
+mongo = client.test
+
+
 
 #Esto será para la creación de habitaciones
 '''
@@ -211,10 +221,15 @@ def not_found(error = None):
 
 
 if __name__ == "__main__":
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except Exception as e:
+        print(e)
     with app.app_context():
         mongo.db.users.create_index('mac_addr', unique = True)
         mongo.db.users.create_index(("username"), unique = True, sparse = True)
-        mongo.db.users.create_index(("email"), unique = True, sparse = True)
+        mongo.db.users.create_index(("email"), unique = True, sparse = True) 
     app.run(debug = True)
 
   
