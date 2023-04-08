@@ -11,6 +11,13 @@ import android.content.Intent;
 
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
@@ -19,6 +26,8 @@ import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.logging.LogManager;
 import org.altbeacon.beacon.service.MonitoringStatus;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by dyoung on 12/13/13.
@@ -26,8 +35,8 @@ import org.altbeacon.beacon.service.MonitoringStatus;
 public class BeaconReferenceApplication extends Application implements MonitorNotifier {
     private static final String TAG = "BeaconReferenceApp";
     //public static final Region wildcardRegion = new Region("wildcardRegion", null,null,null);
-    public static final Region region1 = new Region("whiteRegion", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
-    public static final Region region2 = new Region("blueRegion", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
+    public static final Region region1 = new Region("Salón", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
+    public static final Region region2 = new Region("Ático", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
     public static final Region region3 = new Region("mintRegion", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
     public static boolean insideRegion = false;
 
@@ -112,6 +121,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // Send a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
         Log.d(TAG, "Sending notification.");
+        enter(arg0);
         sendNotification("Entrando en la región" + arg0.getUniqueId());
     }
 
@@ -120,6 +130,65 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         insideRegion = false;
         // do nothing here. logging happens in MonitoringActivity
         sendNotification("Saliendo de la región" + region.getUniqueId());
+        String id = "1";
+        exit(id);
+    }
+
+
+    private void enter(Region region){
+        RequestQueue volleyQueue = Volley.newRequestQueue(BeaconReferenceApplication.this);
+        String url = "https://tfg-u3xd.onrender.com/stays";
+        JSONObject entrada = new JSONObject();
+        try{
+            entrada.put("room_name",region.getUniqueId());
+            entrada.put("user_id", 1);
+        } catch(JSONException e){
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,url,entrada
+            ,(Response.Listener<JSONObject>) response-> {
+                String rsp;
+                try{
+                    Log.d("respuesta", response.getString("message"));
+                }
+                catch (JSONException e){
+                    e.printStackTrace();
+            }
+        },
+        (Response.ErrorListener) error -> {
+            // make a Toast telling the user
+            // that something went wrong
+            Toast.makeText(BeaconReferenceApplication.this, "Some error occurred! Cannot fetch dog image", Toast.LENGTH_LONG).show();
+            // log the error message in the error stream
+            Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
+        });
+        volleyQueue.add(jsonObjectRequest);
+    }
+
+    private void exit(String id){
+        RequestQueue volleyQueue = Volley.newRequestQueue(BeaconReferenceApplication.this);
+        String url = "https://tfg-u3xd.onrender.com/stays/"+id;
+
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,null
+                ,(Response.Listener<JSONObject>) response-> {
+            String rsp;
+            try{
+                Log.d("respuesta", response.getString("message"));
+            }
+            catch (JSONException e){
+                e.printStackTrace();
+            }
+        },
+                (Response.ErrorListener) error -> {
+                    // make a Toast telling the user
+                    // that something went wrong
+                    Toast.makeText(BeaconReferenceApplication.this, "Some error occurred!", Toast.LENGTH_LONG).show();
+                    // log the error message in the error stream
+                    Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
+                });
+        volleyQueue.add(jsonObjectRequest);
     }
 
     @Override

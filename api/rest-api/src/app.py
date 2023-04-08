@@ -83,15 +83,18 @@ def update_rooms(id):
 @app.route('/stays', methods =['POST'] )
 def create_stay():
 
-    #Recibiendo como datos room_id y user_id
+    #Recibiendo como datos room_name y user_id
 
     if 'room_name' in request.json and 'user_id' in request.json:
         room_name = str(request.json['room_name'])
         user_id = str(request.json['user_id'])
         
         start_date = datetime.today().replace(microsecond=0)
-        id = mongo.db.stays.insert_one({'room_name' : room_name, 'user_id' : user_id, 'start_date': start_date})
-        response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' creada satisfactoriamente'})
+        if mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}):
+            response = "Ya existe una estancia sin cerrar para esa estancia"
+        else:
+            id = mongo.db.stays.insert_one({'room_name' : room_name, 'user_id' : user_id, 'start_date': start_date})
+            response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' creada satisfactoriamente'})
 
         return response
 
