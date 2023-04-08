@@ -90,8 +90,8 @@ def create_stay():
         user_id = str(request.json['user_id'])
         
         start_date = datetime.today().replace(microsecond=0)
-        if mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}):
-            response = "Ya existe una estancia sin cerrar para esa estancia"
+        if mongo.db.stays.find_one({'user_id' : user_id, 'room_name': room_name, "end_date":{"$exists":False}}):
+            response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
         else:
             id = mongo.db.stays.insert_one({'room_name' : room_name, 'user_id' : user_id, 'start_date': start_date})
             response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' creada satisfactoriamente'})
