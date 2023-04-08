@@ -107,7 +107,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
 
         beaconManager.startMonitoring(region1);
         beaconManager.startMonitoring(region2);
-        beaconManager.startMonitoring(region3);
+        //beaconManager.startMonitoring(region3);
 
         // If you wish to test beacon detection in the Android Emulator, you can use code like this:
         // BeaconManager.setBeaconSimulator(new TimedBeaconSimulator() );
