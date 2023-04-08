@@ -1,19 +1,19 @@
 
-from datetime import datetime
-
-from flask import Flask, request, jsonify, Response
+import datetime
+from flask import Flask, request, jsonify, Response, make_response
 from flask_pymongo import PyMongo 
 from bson import json_util
 from bson.objectid import ObjectId
 import pymongo
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
-from werkzeug.security import generate_password_hash
-
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+from functools import wraps
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = "i7f3DyCMKFpWy66QrUod"
+app.config["SECRET_KEY"] = "a"
 app.config["MONGO_URI"] = "mongodb+srv://javit:<f6dFZDZsA4M0rTz8>@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority"
 
 client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority",server_api=ServerApi('1'))
@@ -21,6 +21,19 @@ client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mong
 mongo = client.test
 
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 403
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+        except:
+            return jsonify({'message' : 'Token is invalid'}), 403
+
+        return f(*args, **kwargs)
+    return decorated
 
 #Esto será para la creación de habitaciones
 '''
@@ -89,7 +102,7 @@ def create_stay():
         room_name = str(request.json['room_name'])
         user_id = str(request.json['user_id'])
         
-        start_date = datetime.today().replace(microsecond=0)
+        start_date = datetime.datetime.today().replace(microsecond=0)
         if mongo.db.stays.find_one({'user_id' : user_id, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
         else:
@@ -112,7 +125,7 @@ def list_stays():
 def update_stay(user_id):
 
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
-    end_date = datetime.today().replace(microsecond=0)
+    end_date = datetime.datetime.today().replace(microsecond=0)
 
     if mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}):
         print(mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}))
@@ -145,9 +158,16 @@ def create_users():
         enc_password = generate_password_hash(password)
         #Comprobar que no se repita alguno de los campos que son únicos
         try:
-            id = mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'User','username' : username, 'password' : enc_password, 'email' : email})
-            response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
-            return response
+            ##Si existe ya una cuenta anónima se modifica para que sea una cuenta normal
+            user = mongo.db.users.find_one({'mac_addr' : mac_addr})
+            if user['type'] == 'Anonymous':
+                id = mongo.db.users.update_one({'mac_addr' : mac_addr},{'$set':{'type':'User', 'mac_addr':mac_addr, 'username':username, 'password': enc_password, 'email':email}})
+                response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
+                return response
+            else:
+                id = mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'User','username' : username, 'password' : enc_password, 'email' : email})
+                response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
+                return response
 
         #Si alguno de los campos únicos está repetido identificar cual es y sacar el error correspondiente
         except pymongo.errors.DuplicateKeyError as error:
@@ -159,7 +179,8 @@ def create_users():
         'status' : 500 })
 
             elif(field == "mac_addr"):
-                response = jsonify({'message': 'Se ha producido un error. Ya existe un usuario con esa dirección mac',
+
+                response = jsonify({'message': 'Se ha producido un error. Ya existe un usuario asociado a ese dispositivo',
         'status' : 500 })
             else:
                 response = jsonify({'message': 'Se ha producido un error. Ya existe un usuario con email ' + email,
@@ -177,6 +198,38 @@ def create_users():
     
     else:
         return not_found()
+    
+##Login para usuarios con cuenta   
+@app.route('/login', methods = ["POST"])
+def login():
+    if ('username' in request.json and 'password' in request.json):
+        username = request.json['username']
+        password = request.json['password']
+        user = mongo.db.users.find_one({'username':username})     
+        user_psw = user['password']
+        if check_password_hash(user_psw,password):
+            token = jwt.encode({'user': username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            return jsonify({'token' : token})
+
+        return make_response('could not verify!', 401,{'WWW-Authenticate' : 'Basic realm = "Login required"'})
+    
+##Login para usuarios anónimos
+@app.route('/login/anonymous', methods = ["POST"])
+def login_anonymous():
+    if ('mac_addr' in request.json):
+        mac_addr = request.json['mac_addr']
+        user = mongo.db.users.find_one({'mac_addr':mac_addr})     
+        if user:
+            token = jwt.encode({'mac_addr': user['mac_addr'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            return jsonify({'token' : token})
+        else:
+            mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'Anonymous'})
+            token = jwt.encode({'mac_addr': mac_addr, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            return jsonify({'token' : token})
+        
+
+
+
 
 @app.route('/users', methods=['GET'])
 def list_users():
