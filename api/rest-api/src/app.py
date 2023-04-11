@@ -101,10 +101,16 @@ def create_stay():
     if 'room_name' in request.json and 'user_id' in request.json:
         room_name = str(request.json['room_name'])
         user_id = str(request.json['user_id'])
+        if(room_name == "HF"):
+            alt_name = "Bar"
+        else:
+            alt_name = "HF"
         
         start_date = datetime.datetime.today().replace(microsecond=0)
         if mongo.db.stays.find_one({'user_id' : user_id, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
+        elif mongo.db.stays.find_one({'room_name': alt_name, "end_date":{"$exists":False}}):
+            response = jsonify({'message' : "No hay problema, las regiones se superponen"})
         else:
             id = mongo.db.stays.insert_one({'room_name' : room_name, 'user_id' : user_id, 'start_date': start_date})
             response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' creada satisfactoriamente'})
@@ -121,18 +127,21 @@ def list_stays():
     #Lo de abajo indica que la repuesta es un archivo json
     return Response(response, mimetype='application/json')
 
-@app.route('/stays/<user_id>', methods =['PUT'] )
-def update_stay(user_id):
-
+@app.route('/stays', methods =['PUT'] )
+def update_stay():
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
     end_date = datetime.datetime.today().replace(microsecond=0)
-
-    if mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}):
-        print(mongo.db.stays.find_one({'user_id' : user_id, "end_date":{"$exists":False}}))
-        id = mongo.db.stays.update_many({'user_id' : user_id, 'end_date' :{"$exists":False}},
-                                        {'$set':{'end_date': end_date}})
-        response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' modificada satisfactoriamente'})
-        return response
+    if 'room_name' in request.json and 'user_id' in request.json:
+        room_name = str(request.json['room_name'])
+        user_id = str(request.json['user_id'])
+        if mongo.db.stays.find_one({'user_id' : user_id,'room_name': room_name, "end_date":{"$exists":False}}):
+            id = mongo.db.stays.update_many({'user_id' : user_id, 'end_date' :{"$exists":False}},
+                                            {'$set':{'end_date': end_date}})
+            response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' modificada satisfactoriamente'})
+            return response
+        else:
+            response = jsonify({'message' : "Ya hay una estancia creada sin cerrar"})
+            return response
     else:
         return not_found()
 
