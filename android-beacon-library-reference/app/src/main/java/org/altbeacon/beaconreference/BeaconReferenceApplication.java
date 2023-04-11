@@ -35,9 +35,9 @@ import org.json.JSONObject;
 public class BeaconReferenceApplication extends Application implements MonitorNotifier {
     private static final String TAG = "BeaconReferenceApp";
     //public static final Region wildcardRegion = new Region("wildcardRegion", null,null,null);
-    public static final Region region1 = new Region("Salón", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
-    public static final Region region2 = new Region("Ático", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
-    public static final Region region3 = new Region("mintRegion", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
+    public static final Region region1 = new Region("HF", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
+    public static final Region region2 = new Region("Bar", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
+    public static final Region region3 = new Region("Comedor", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
     public static boolean insideRegion = false;
 
     public void onCreate() {
@@ -107,7 +107,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
 
         beaconManager.startMonitoring(region1);
         beaconManager.startMonitoring(region2);
-        //beaconManager.startMonitoring(region3);
+        beaconManager.startMonitoring(region3);
 
         // If you wish to test beacon detection in the Android Emulator, you can use code like this:
         // BeaconManager.setBeaconSimulator(new TimedBeaconSimulator() );
@@ -121,7 +121,8 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // Send a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
         Log.d(TAG, "Sending notification.");
-        enter(arg0);
+        String id = "1";
+        enter(id, arg0);
         sendNotification("Entrando en la región" + arg0.getUniqueId());
     }
 
@@ -131,11 +132,11 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // do nothing here. logging happens in MonitoringActivity
         sendNotification("Saliendo de la región" + region.getUniqueId());
         String id = "1";
-        exit(id);
+        exit(id, region);
     }
 
 
-    private void enter(Region region){
+    private void enter(String id,Region region){
         RequestQueue volleyQueue = Volley.newRequestQueue(BeaconReferenceApplication.this);
         String url = "https://tfg-u3xd.onrender.com/stays";
         JSONObject entrada = new JSONObject();
@@ -166,10 +167,16 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         volleyQueue.add(jsonObjectRequest);
     }
 
-    private void exit(String id){
+    private void exit(String id, Region region){
         RequestQueue volleyQueue = Volley.newRequestQueue(BeaconReferenceApplication.this);
-        String url = "https://tfg-u3xd.onrender.com/stays/"+id;
-
+        String url = "https://tfg-u3xd.onrender.com/stays";
+        JSONObject entrada = new JSONObject();
+        try{
+            entrada.put("room_name",region.getUniqueId());
+            entrada.put("user_id", 1);
+        } catch(JSONException e){
+            e.printStackTrace();
+        }
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,null
                 ,(Response.Listener<JSONObject>) response-> {
