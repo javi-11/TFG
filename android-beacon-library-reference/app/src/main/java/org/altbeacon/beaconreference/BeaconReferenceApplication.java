@@ -173,12 +173,12 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         JSONObject entrada = new JSONObject();
         try{
             entrada.put("room_name",region.getUniqueId());
-            entrada.put("user_id", 1);
+            entrada.put("user_id", id);
         } catch(JSONException e){
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,null
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,entrada
                 ,(Response.Listener<JSONObject>) response-> {
             String rsp;
             try{
