@@ -14,7 +14,7 @@
       android:text="Registrarse"
       android:onClick="onRegisterClicked"
       android:layout_marginTop="340dp"
-      android:layout_marginStart="140dp"
+      android:layout_marginStart="100dp"
       tools:layout_editor_absoluteX="161dp"
       tools:layout_editor_absoluteY="415dp"
       android:background="@drawable/btn_shape_round"/>
@@ -26,8 +26,8 @@
       android:text="Iniciar sesión"
       android:onClick="onLogInClicked"
       android:layout_marginTop="420dp"
-      android:layout_marginStart="140dp"
-      tools:layout_editor_absoluteX="161dp"
+      android:layout_marginStart="100dp"
+      tools:layout_editor_absoluteX="131dp"
       tools:layout_editor_absoluteY="415dp"
       android:background="@drawable/btn_shape_round"/>
   <Button
@@ -36,17 +36,13 @@
       android:layout_height="wrap_content"
       android:text="Acceso anónimo"
       android:onClick="onAnonymousClicked"
-      android:layout_marginTop="600dp"
-      android:layout_marginStart="140dp"
+      android:layout_marginTop="520dp"
+      android:layout_marginStart="100dp"
       tools:layout_editor_absoluteX="161dp"
       tools:layout_editor_absoluteY="415dp"
       android:background="@drawable/btn_shape_round"/>
 
-  <TextView
-      android:id="@+id/mac"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="TextView" />
+
 
 
 </RelativeLayout>

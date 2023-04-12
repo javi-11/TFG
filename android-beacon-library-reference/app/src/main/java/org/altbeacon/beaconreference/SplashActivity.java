@@ -80,19 +80,19 @@ public class SplashActivity extends Activity {
         RequestQueue volleyQueue = Volley.newRequestQueue(SplashActivity.this);
         String url = "https://tfg-u3xd.onrender.com/login/anonymous";
         JSONObject entrada = new JSONObject();
-        TextView t = (TextView) findViewById(R.id.mac);
+        //TextView t = (TextView) findViewById(R.id.mac);
         try{
             entrada.put("uuid",uniqueID);
         } catch(JSONException e){
             e.printStackTrace();
         }
-        t.setText(uniqueID);
+        //t.setText(uniqueID);
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,url,entrada
                 ,(Response.Listener<JSONObject>) response-> {
             String rsp = response.toString();
-            t.setText(rsp);
+            //t.setText(rsp);
             BeaconReferenceApplication.setUuid(uniqueID);
             Intent myIntent = new Intent(this, MonitoringActivity.class);
 
