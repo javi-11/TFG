@@ -153,7 +153,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         JSONObject entrada = new JSONObject();
         try{
             entrada.put("room_name",region.getUniqueId());
-            entrada.put("user_id", id);
+            entrada.put("uuid", id);
         } catch(JSONException e){
             e.printStackTrace();
         }
@@ -184,7 +184,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         JSONObject entrada = new JSONObject();
         try{
             entrada.put("room_name",region.getUniqueId());
-            entrada.put("user_id", id);
+            entrada.put("uuid", id);
         } catch(JSONException e){
             e.printStackTrace();
         }

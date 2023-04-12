@@ -82,7 +82,7 @@ public class SplashActivity extends Activity {
         JSONObject entrada = new JSONObject();
         TextView t = (TextView) findViewById(R.id.mac);
         try{
-            entrada.put("mac_addr",uniqueID);
+            entrada.put("uuid",uniqueID);
         } catch(JSONException e){
             e.printStackTrace();
         }
