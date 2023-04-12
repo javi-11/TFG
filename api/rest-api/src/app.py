@@ -98,9 +98,9 @@ def create_stay():
 
     #Recibiendo como datos room_name y user_id
 
-    if 'room_name' in request.json and 'user_id' in request.json:
+    if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['user_id'])
+        user_id = str(request.json['uuid'])
         if(room_name == "HF"):
             alt_name = "Bar"
         else:
@@ -131,9 +131,9 @@ def list_stays():
 def update_stay():
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
     end_date = datetime.datetime.today().replace(microsecond=0)
-    if 'room_name' in request.json and 'user_id' in request.json:
+    if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['user_id'])
+        user_id = str(request.json['uuid'])
         if mongo.db.stays.find_one({'user_id' : user_id,'room_name': room_name, "end_date":{"$exists":False}}):
             id = mongo.db.stays.update_many({'user_id' : user_id, 'end_date' :{"$exists":False}},
                                             {'$set':{'end_date': end_date}})
@@ -169,7 +169,7 @@ def create_users():
         try:
             ##Si existe ya una cuenta anónima se modifica para que sea una cuenta normal
             user = mongo.db.users.find_one({'uuid' : uuid})
-            if user['type'] == 'Anonymous':
+            if user and user['type'] == 'Anonymous':
                 id = mongo.db.users.update_one({'uuid' : uuid},{'$set':{'type':'User', 'uuid':uuid, 'username':username, 'password': enc_password, 'email':email}})
                 response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
                 return response
@@ -200,8 +200,8 @@ def create_users():
 
     #Creación de usuarios anónimos
     elif 'uuid' in request.json:
-        uuid = request.json['uuid']
-        id = mongo.db.users.insert_one({'uuid' : uuid,'type':'Anonymous'})
+        uuid = str(request.json['uuid'])
+        id = mongo.db.users.insert_one({'uuid' : str(uuid),'type':'Anonymous'})
         response = jsonify({'message' : 'Dispositivo con id: ' + str(id) + ' creado satisfactoriamente'})
         return response
     
@@ -229,12 +229,14 @@ def login_anonymous():
         uuid = request.json['uuid']
         user = mongo.db.users.find_one({'uuid':uuid})     
         if user:
-            token = jwt.encode({'uuid': user['uuid'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            token = jwt.encode({'uuid': user['_id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
             return jsonify({'token' : token})
         else:
             mongo.db.users.insert_one({'uuid' : uuid,'type':'Anonymous'})
             token = jwt.encode({'uuid': uuid, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
             return jsonify({'token' : token})
+    else:
+        return jsonify({'message': "Debes enviar tu identificador"})
         
 
 
