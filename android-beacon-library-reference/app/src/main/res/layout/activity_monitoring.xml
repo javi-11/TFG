@@ -42,4 +42,10 @@
         android:layout_below="@+id/monitoringText"
         android:layout_toRightOf="@id/Button01"
         android:text="Disable monitoring" />
+
+    <TextView
+        android:id="@+id/uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
 </RelativeLayout>

@@ -40,6 +40,14 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
     public static final Region region3 = new Region("Comedor", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
     public static boolean insideRegion = false;
 
+    private static String uuid = null;
+
+    public static void setUuid(String uuidAux){
+        uuid = uuidAux;
+    }
+    public static String getUuid(){
+        return uuid;
+    }
     public void onCreate() {
         super.onCreate();
         BeaconManager beaconManager = org.altbeacon.beacon.BeaconManager.getInstanceForApplication(this);
@@ -121,7 +129,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // Send a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
         Log.d(TAG, "Sending notification.");
-        if(SplashActivity.getDevId() == null){
+        if(uuid == null){
 
         }
         else{
@@ -136,7 +144,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
     public void didExitRegion(Region region) {
         insideRegion = false;
         // do nothing here. logging happens in MonitoringActivity
-        if(SplashActivity.getDevId() == null){
+        if(uuid == null){
 
         }
         else{

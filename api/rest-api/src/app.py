@@ -229,7 +229,7 @@ def login_anonymous():
         uuid = request.json['uuid']
         user = mongo.db.users.find_one({'uuid':uuid})     
         if user:
-            token = jwt.encode({'uuid': user['_id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            token = jwt.encode({'uuid': uuid, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
             return jsonify({'token' : token})
         else:
             mongo.db.users.insert_one({'uuid' : uuid,'type':'Anonymous'})
