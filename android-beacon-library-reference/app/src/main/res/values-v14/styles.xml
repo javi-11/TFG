@@ -7,6 +7,11 @@
     -->
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!-- API 14 theme customizations can go here. -->
+        <item name ="colorPrimary">#7198DD</item>
+    </style>
+
+    <style name = "Button.Register" parent = "ThemeOverlay.AppCompat">
+        <item name = "colorAccent">@android:color/holo_blue_dark</item>
     </style>
 
 </resources>
