@@ -121,18 +121,29 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         // Send a notification to the user whenever a Beacon
         // matching a Region (defined above) are first seen.
         Log.d(TAG, "Sending notification.");
-        String id = "1";
-        enter(id, arg0);
-        sendNotification("Entrando en la región" + arg0.getUniqueId());
+        if(SplashActivity.getDevId() == null){
+
+        }
+        else{
+            String id = SplashActivity.getDevId();
+            enter(id, arg0);
+            sendNotification("Entrando en la región" + arg0.getUniqueId());
+        }
+
     }
 
     @Override
     public void didExitRegion(Region region) {
         insideRegion = false;
         // do nothing here. logging happens in MonitoringActivity
-        sendNotification("Saliendo de la región" + region.getUniqueId());
-        String id = "1";
-        exit(id, region);
+        if(SplashActivity.getDevId() == null){
+
+        }
+        else{
+            sendNotification("Saliendo de la región" + region.getUniqueId());
+            String id = SplashActivity.getDevId();
+            exit(id, region);
+        }
     }
 
 
@@ -142,7 +153,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         JSONObject entrada = new JSONObject();
         try{
             entrada.put("room_name",region.getUniqueId());
-            entrada.put("user_id", 1);
+            entrada.put("uuid", id);
         } catch(JSONException e){
             e.printStackTrace();
         }
@@ -173,12 +184,12 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         JSONObject entrada = new JSONObject();
         try{
             entrada.put("room_name",region.getUniqueId());
-            entrada.put("user_id", 1);
+            entrada.put("uuid", id);
         } catch(JSONException e){
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,null
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,url,entrada
                 ,(Response.Listener<JSONObject>) response-> {
             String rsp;
             try{

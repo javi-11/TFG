@@ -98,9 +98,9 @@ def create_stay():
 
     #Recibiendo como datos room_name y user_id
 
-    if 'room_name' in request.json and 'user_id' in request.json:
+    if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['user_id'])
+        user_id = str(request.json['uuid'])
         if(room_name == "HF"):
             alt_name = "Bar"
         else:
@@ -131,9 +131,9 @@ def list_stays():
 def update_stay():
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
     end_date = datetime.datetime.today().replace(microsecond=0)
-    if 'room_name' in request.json and 'user_id' in request.json:
+    if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['user_id'])
+        user_id = str(request.json['uuid'])
         if mongo.db.stays.find_one({'user_id' : user_id,'room_name': room_name, "end_date":{"$exists":False}}):
             id = mongo.db.stays.update_many({'user_id' : user_id, 'end_date' :{"$exists":False}},
                                             {'$set':{'end_date': end_date}})
@@ -159,8 +159,8 @@ def delete_stay(id):
 def create_users():
     #Recibiendo datos
     #Creación de usuarios completos
-    if 'mac_addr' in request.json and 'username' in request.json and 'password' in request.json and 'email' in request.json:
-        mac_addr = str(request.json['mac_addr'])
+    if 'uuid' in request.json and 'username' in request.json and 'password' in request.json and 'email' in request.json:
+        uuid = str(request.json['uuid'])
         username = str(request.json['username'])
         password = str(request.json['password'])
         email = str(request.json['email'])
@@ -168,13 +168,13 @@ def create_users():
         #Comprobar que no se repita alguno de los campos que son únicos
         try:
             ##Si existe ya una cuenta anónima se modifica para que sea una cuenta normal
-            user = mongo.db.users.find_one({'mac_addr' : mac_addr})
-            if user['type'] == 'Anonymous':
-                id = mongo.db.users.update_one({'mac_addr' : mac_addr},{'$set':{'type':'User', 'mac_addr':mac_addr, 'username':username, 'password': enc_password, 'email':email}})
+            user = mongo.db.users.find_one({'uuid' : uuid})
+            if user and user['type'] == 'Anonymous':
+                id = mongo.db.users.update_one({'uuid' : uuid},{'$set':{'type':'User', 'uuid':uuid, 'username':username, 'password': enc_password, 'email':email}})
                 response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
                 return response
             else:
-                id = mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'User','username' : username, 'password' : enc_password, 'email' : email})
+                id = mongo.db.users.insert_one({'uuid' : uuid,'type':'User','username' : username, 'password' : enc_password, 'email' : email})
                 response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
                 return response
 
@@ -187,7 +187,7 @@ def create_users():
                 response = jsonify({'message': 'Se ha producido un error. Ya existe un usuario con nombre de usuario ' + username,
         'status' : 500 })
 
-            elif(field == "mac_addr"):
+            elif(field == "uuid"):
 
                 response = jsonify({'message': 'Se ha producido un error. Ya existe un usuario asociado a ese dispositivo',
         'status' : 500 })
@@ -199,9 +199,9 @@ def create_users():
             return response
 
     #Creación de usuarios anónimos
-    elif 'mac_addr' in request.json:
-        mac_addr = request.json['mac_addr']
-        id = mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'Anonymous'})
+    elif 'uuid' in request.json:
+        uuid = str(request.json['uuid'])
+        id = mongo.db.users.insert_one({'uuid' : str(uuid),'type':'Anonymous'})
         response = jsonify({'message' : 'Dispositivo con id: ' + str(id) + ' creado satisfactoriamente'})
         return response
     
@@ -225,16 +225,18 @@ def login():
 ##Login para usuarios anónimos
 @app.route('/login/anonymous', methods = ["POST"])
 def login_anonymous():
-    if ('mac_addr' in request.json):
-        mac_addr = request.json['mac_addr']
-        user = mongo.db.users.find_one({'mac_addr':mac_addr})     
+    if ('uuid' in request.json):
+        uuid = request.json['uuid']
+        user = mongo.db.users.find_one({'uuid':uuid})     
         if user:
-            token = jwt.encode({'mac_addr': user['mac_addr'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            token = jwt.encode({'uuid': user['_id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
             return jsonify({'token' : token})
         else:
-            mongo.db.users.insert_one({'mac_addr' : mac_addr,'type':'Anonymous'})
-            token = jwt.encode({'mac_addr': mac_addr, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            mongo.db.users.insert_one({'uuid' : uuid,'type':'Anonymous'})
+            token = jwt.encode({'uuid': uuid, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
             return jsonify({'token' : token})
+    else:
+        return jsonify({'message': "Debes enviar tu identificador"})
         
 
 
@@ -254,9 +256,9 @@ def get_users(id):
     response = json_util.dumps(user)
     return Response(response,mimetype = "application/json")
 
-@app.route('/users/device/<mac_addr>', methods = ['GET'])
-def get_users_by_device_id(mac_addr):
-    user = mongo.db.users.find_one({'mac_addr' : mac_addr})
+@app.route('/users/device/<uuid>', methods = ['GET'])
+def get_users_by_device_id(uuid):
+    user = mongo.db.users.find_one({'uuid' : uuid})
     #Se convierte en un json
     response = json_util.dumps(user)
     return Response(response,mimetype = "application/json")
@@ -292,7 +294,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
     with app.app_context():
-        mongo.db.users.create_index('mac_addr', unique = True)
+        mongo.db.users.create_index('uuid', unique = True)
         mongo.db.users.create_index(("username"), unique = True, sparse = True)
         mongo.db.users.create_index(("email"), unique = True, sparse = True) 
     app.run(debug = True)
