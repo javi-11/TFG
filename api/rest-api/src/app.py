@@ -109,7 +109,7 @@ def create_stay():
         start_date = datetime.datetime.today().replace(microsecond=0)
         if mongo.db.stays.find_one({'uuid' : uuid, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
-        elif mongo.db.stays.find_one({'room_name': alt_name, "end_date":{"$exists":False}}):
+        elif mongo.db.stays.find_one({'room_name': alt_name,'uuid':uuid, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "No hay problema, las regiones se superponen"})
         else:
             id = mongo.db.stays.insert_one({'room_name' : room_name, 'uuid' : uuid, 'start_date': start_date})
