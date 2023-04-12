@@ -100,19 +100,19 @@ def create_stay():
 
     if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['uuid'])
+        uuid = str(request.json['uuid'])
         if(room_name == "HF"):
             alt_name = "Bar"
         else:
             alt_name = "HF"
         
         start_date = datetime.datetime.today().replace(microsecond=0)
-        if mongo.db.stays.find_one({'user_id' : user_id, 'room_name': room_name, "end_date":{"$exists":False}}):
+        if mongo.db.stays.find_one({'uuid' : uuid, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
         elif mongo.db.stays.find_one({'room_name': alt_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "No hay problema, las regiones se superponen"})
         else:
-            id = mongo.db.stays.insert_one({'room_name' : room_name, 'user_id' : user_id, 'start_date': start_date})
+            id = mongo.db.stays.insert_one({'room_name' : room_name, 'uuid' : uuid, 'start_date': start_date})
             response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' creada satisfactoriamente'})
 
         return response
@@ -133,9 +133,9 @@ def update_stay():
     end_date = datetime.datetime.today().replace(microsecond=0)
     if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
-        user_id = str(request.json['uuid'])
-        if mongo.db.stays.find_one({'user_id' : user_id,'room_name': room_name, "end_date":{"$exists":False}}):
-            id = mongo.db.stays.update_many({'user_id' : user_id, 'end_date' :{"$exists":False}},
+        uuid = str(request.json['uuid'])
+        if mongo.db.stays.find_one({'uuid' : uuid,'room_name': room_name, "end_date":{"$exists":False}}):
+            id = mongo.db.stays.update_many({'uuid' : uuid, 'end_date' :{"$exists":False}},
                                             {'$set':{'end_date': end_date}})
             response = jsonify({'message' : 'Estancia con id: ' + str(id) + ' modificada satisfactoriamente'})
             return response
