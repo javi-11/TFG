@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.MonitorNotifier;
@@ -41,6 +43,11 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		// No need to start monitoring here because we already did it in
 		// BeaconReferenceApplication.onCreate
 		// check if we are currently inside or outside of that region to update the display
+
+
+		TextView t = (TextView) findViewById(R.id.uuid);
+		t.setText(BeaconReferenceApplication.getUuid());
+
 		if (BeaconReferenceApplication.insideRegion) {
 			logToDisplay("Beacons are visible.");
 		}

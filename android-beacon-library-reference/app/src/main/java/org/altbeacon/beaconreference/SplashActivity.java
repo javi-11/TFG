@@ -93,7 +93,9 @@ public class SplashActivity extends Activity {
                 ,(Response.Listener<JSONObject>) response-> {
             String rsp = response.toString();
             t.setText(rsp);
+            BeaconReferenceApplication.setUuid(uniqueID);
             Intent myIntent = new Intent(this, MonitoringActivity.class);
+
             token = response.toString();
             this.startActivity(myIntent);
             try{
