@@ -1,8 +1,10 @@
 
 import datetime
+from zoneinfo import ZoneInfo
+import zoneinfo
 from flask import Flask, request, jsonify, Response, make_response
 from flask_pymongo import PyMongo 
-from bson import json_util
+from bson import DatetimeConversion, json_util
 from bson.objectid import ObjectId
 import pymongo
 from pymongo import MongoClient
@@ -10,6 +12,7 @@ from pymongo.server_api import ServerApi
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from functools import wraps
+
 
 app = Flask(__name__)
 
@@ -105,8 +108,9 @@ def create_stay():
             alt_name = "Bar"
         else:
             alt_name = "HF"
+   
+        start_date = datetime.datetime.today().replace(tzinfo=ZoneInfo("Europe/Madrid"),microsecond=0)
         
-        start_date = datetime.datetime.today().replace(microsecond=0)
         if mongo.db.stays.find_one({'uuid' : uuid, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
         elif mongo.db.stays.find_one({'room_name': alt_name,'uuid':uuid, "end_date":{"$exists":False}}):
@@ -150,6 +154,172 @@ def delete_stay(id):
     mongo.db.stays.delete_one({'_id':ObjectId(id)})
     response = jsonify({'message' : 'La estancia con el id ' + id + ' fue eliminada satisfactoriamente'})
     return response
+
+@app.route('/stays/history', methods = ['GET'])
+def history():
+    if 'uuid' in request.json:
+        uuid = str(request.json['uuid'])
+        stays = mongo.db.stays.find({'uuid' : uuid})
+        response = json_util.dumps(stays)
+        ##response = jsonify({'message' : 'Estancias del usuario ' + uuid + ' recuperadas satisfactoriamente: '+ stays})
+        return Response(response,mimetype = "application/json")
+    
+    else:
+        response = jsonify({'message' : "No enviaste un identificador válido" })
+        return response
+
+@app.route('/stays/history/day', methods = ['GET'])
+def history_d():
+    if 'uuid' in request.json and 'day' in request.json:
+        uuid = str(request.json['uuid'])
+        ##Conversiones temporales necesarias para poder hacer la comprobacion
+        day_aux =  str(request.json['day'])
+        day = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
+        day2_aux = day + datetime.timedelta(days = 1)
+        day = datetime.datetime.combine(day, datetime.datetime.min.time()).replace(tzinfo=datetime.timezone.utc).isoformat()
+        day2 = datetime.datetime.combine(day2_aux, datetime.datetime.min.time()).replace(tzinfo=datetime.timezone.utc).isoformat()
+
+        stays = mongo.db.stays.find({'uuid': uuid, "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2) }})
+        response = json_util.dumps(stays)
+        
+        return Response(response,mimetype = "application/json")
+    else:
+        response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
+        return response
+
+
+@app.route('/stays/history/hour', methods = ['GET'])
+def history_h():
+    ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
+    if 'uuid' in request.json and 'hour1' in request.json and 'hour2' in request.json:
+        uuid = str(request.json['uuid'])
+
+        ##Conversiones temporales necesarias para poder hacer la comprobacion
+        hour1_aux =  str(request.json['hour1'])
+        hour1 = datetime.datetime.strptime(hour1_aux, '%Y-%m-%d %H:%M:%S')
+        hour2_aux = str(request.json['hour2'])
+        hour2 = datetime.datetime.strptime(hour2_aux, '%Y-%m-%d %H:%M:%S')
+
+        ##Se añade la información de la timezone en la que estamos paar luego poder hacer la conversión
+        hour1 = hour1.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+        hour2 = hour2.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+        
+        ##Horas locales en utc para que se pueda comprobar bien en la base de datos
+        h1 = hour1.astimezone(datetime.timezone.utc).isoformat()
+        h2 = hour2.astimezone(datetime.timezone.utc).isoformat()
+    
+        
+        stays = mongo.db.stays.find({'uuid': uuid, "start_date":{'$gte' : datetime.datetime.fromisoformat(h1), '$lt' : datetime.datetime.fromisoformat(h2) }})
+        response = json_util.dumps(stays)
+ 
+        return Response(response,mimetype = "application/json")
+    else:
+        response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
+        return response
+    
+@app.route('/stays/room/hours', methods = ['GET'])
+def stays_room_hours():
+    ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
+    if 'room_name' in request.json and 'hour1' in request.json and 'hour2' in request.json:
+        room_name = str(request.json['room_name'])
+
+        ##Conversiones temporales necesarias para poder hacer la comprobacion
+        hour1_aux =  str(request.json['hour1'])
+        hour1 = datetime.datetime.strptime(hour1_aux, '%Y-%m-%d %H:%M:%S')
+        hour2_aux = str(request.json['hour2'])
+        hour2 = datetime.datetime.strptime(hour2_aux, '%Y-%m-%d %H:%M:%S')
+
+        ##Se añade la información de la timezone en la que estamos paar luego poder hacer la conversión
+        hour1 = hour1.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+        hour2 = hour2.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+        
+        ##Horas locales en utc para que se pueda comprobar bien en la base de datos
+        h1 = hour1.astimezone(datetime.timezone.utc).isoformat()
+        h2 = hour2.astimezone(datetime.timezone.utc).isoformat()
+    
+        
+        stays = mongo.db.stays.find({'room_name': room_name, "start_date":{'$gte' : datetime.datetime.fromisoformat(h1), '$lt' : datetime.datetime.fromisoformat(h2) }})
+        response = json_util.dumps(stays)
+ 
+        return Response(response,mimetype = "application/json")
+    else:
+        response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
+        return response
+
+
+@app.route('/stays/room/most_used', methods = ['GET'])
+def history_room_most_used():
+    if 'day' in request.json:
+        ##Conversiones temporales necesarias para poder hacer la comprobacion
+        day_aux =  str(request.json['day'])
+        day = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
+        day2_aux = day + datetime.timedelta(days = 1)
+        day = datetime.datetime.combine(day, datetime.datetime.min.time()).replace(tzinfo=datetime.timezone.utc).isoformat()
+        day2 = datetime.datetime.combine(day2_aux, datetime.datetime.min.time()).replace(tzinfo=datetime.timezone.utc).isoformat()
+
+        salas=['Comedor', 'HF', 'Bar']
+        max_estancias = 0
+        sala_def=""
+        for sala in salas:
+            estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
+            if len(estancias) > max_estancias:
+                max_estancias = len(estancias)
+                sala_def=sala
+        
+        return jsonify({'message' : "La sala más usada fue "+ sala_def + " con " + str(max_estancias) + " estancias."})
+    else:
+        response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
+        return response
+
+@app.route('/stays/room/most_used_per_hour', methods = ['GET'])
+def history_room_most_used_perHour():
+    if 'day' in request.json:
+        ##Conversiones temporales necesarias para poder hacer la comprobacion
+        day_aux =  str(request.json['day'])
+        day_a = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
+        
+        day = datetime.datetime.combine(day_a, datetime.datetime.min.time()).replace(tzinfo=datetime.timezone.utc).isoformat()
+        
+        salas_str = ['Comedor', 'HF', 'Bar']
+        salas = {'Comedor':0,'HF':0,'Bar':0}
+        horas = {'Comedor':0, 'HF':0, 'Bar' : 0}
+        horas2 = {'Comedor':0, 'HF':0, 'Bar' : 0}
+    
+
+        #Se comprueba la ocupación en cada sala para cada hora para saber cuál es la ocupación máxima y en qué hora se ha producido la misma.
+        for sala in salas_str:
+            i = 1
+            while i <= 24:
+                
+                day_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i-1)
+                day_aux2 = day_aux.replace(tzinfo=datetime.timezone.utc)
+                day = day_aux2.isoformat()
+                day2_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i)
+                day2_aux2 = day2_aux.replace(tzinfo=datetime.timezone.utc)
+                day2 = day2_aux2.isoformat()
+                estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
+                if len(estancias) > salas.get(sala):
+                    salas[sala] = len(estancias)
+                    horas[sala] = day_aux2.astimezone(ZoneInfo("Europe/Madrid")).hour
+                    horas2[sala] = day2_aux2.astimezone(ZoneInfo("Europe/Madrid")).hour
+                i = i + 1
+
+
+        cadena = ""
+        for sala in salas_str:
+            if salas[sala] > 0:
+                cadena = cadena + " " + sala + " - " + str(salas[sala]) + " personas - " + str(horas[sala]) + "-" +str(horas2[sala])+". "
+            else:
+                cadena = cadena + ". No ha habido nadie en " + sala +"."
+
+        return jsonify({'message' : "Esta fue la hora con mayor número de personas para cada sala: "+ cadena})
+    else:
+        response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
+        return response
+
+
+
+
 
 #Módulo de usuarios
 
@@ -288,6 +458,7 @@ def not_found(error = None):
 
 
 if __name__ == "__main__":
+
     try:
         client.admin.command('ping')
         print("Pinged your deployment. You successfully connected to MongoDB!")
