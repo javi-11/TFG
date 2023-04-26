@@ -155,7 +155,7 @@ def delete_stay(id):
     response = jsonify({'message' : 'La estancia con el id ' + id + ' fue eliminada satisfactoriamente'})
     return response
 
-@app.route('/stays/history', methods = ['GET'])
+@app.route('/stays/history', methods = ['POST'])
 def history():
     if 'uuid' in request.json:
         uuid = str(request.json['uuid'])
@@ -168,7 +168,7 @@ def history():
         response = jsonify({'message' : "No enviaste un identificador válido" })
         return response
 
-@app.route('/stays/history/day', methods = ['GET'])
+@app.route('/stays/history/day', methods = ['POST'])
 def history_d():
     if 'uuid' in request.json and 'day' in request.json:
         uuid = str(request.json['uuid'])
@@ -188,7 +188,7 @@ def history_d():
         return response
 
 
-@app.route('/stays/history/hour', methods = ['GET'])
+@app.route('/stays/history/hour', methods = ['POST'])
 def history_h():
     ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
     if 'uuid' in request.json and 'hour1' in request.json and 'hour2' in request.json:
@@ -217,7 +217,7 @@ def history_h():
         response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
         return response
     
-@app.route('/stays/room/hours', methods = ['GET'])
+@app.route('/stays/room/hours', methods = ['POST'])
 def stays_room_hours():
     ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
     if 'room_name' in request.json and 'hour1' in request.json and 'hour2' in request.json:
@@ -247,7 +247,7 @@ def stays_room_hours():
         return response
 
 
-@app.route('/stays/room/most_used', methods = ['GET'])
+@app.route('/stays/room/most_used', methods = ['POST'])
 def history_room_most_used():
     if 'day' in request.json:
         ##Conversiones temporales necesarias para poder hacer la comprobacion
@@ -271,7 +271,7 @@ def history_room_most_used():
         response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
         return response
 
-@app.route('/stays/room/most_used_per_hour', methods = ['GET'])
+@app.route('/stays/room/most_used_per_hour', methods = ['POST'])
 def history_room_most_used_perHour():
     if 'day' in request.json:
         ##Conversiones temporales necesarias para poder hacer la comprobacion
@@ -310,7 +310,7 @@ def history_room_most_used_perHour():
             if salas[sala] > 0:
                 cadena = cadena + " " + sala + " - " + str(salas[sala]) + " personas - " + str(horas[sala]) + "-" +str(horas2[sala])+". "
             else:
-                cadena = cadena + ". No ha habido nadie en " + sala +"."
+                cadena = cadena + " No ha habido nadie en " + sala +"."
 
         return jsonify({'message' : "Esta fue la hora con mayor número de personas para cada sala: "+ cadena})
     else:
