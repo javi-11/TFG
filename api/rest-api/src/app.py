@@ -109,7 +109,8 @@ def create_stay():
         else:
             alt_name = "HF"
    
-        start_date = datetime.datetime.today().replace(tzinfo=ZoneInfo("Europe/Madrid"),microsecond=0)
+        start_dateAux = datetime.datetime.today().replace(microsecond=0)
+        start_date = start_dateAux.astimezone()
         
         if mongo.db.stays.find_one({'uuid' : uuid, 'room_name': room_name, "end_date":{"$exists":False}}):
             response = jsonify({'message' : "Ya existe una estancia sin cerrar para esa habitación"})
@@ -134,7 +135,8 @@ def list_stays():
 @app.route('/stays', methods =['PUT'] )
 def update_stay():
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
-    end_date = datetime.datetime.today().replace(tzinfo=ZoneInfo("Europe/Madrid"),microsecond=0)
+    end_dateAux = datetime.datetime.today().replace(microsecond=0)
+    end_date = end_dateAux.astimezone()
     if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
         uuid = str(request.json['uuid'])
