@@ -134,7 +134,7 @@ def list_stays():
 @app.route('/stays', methods =['PUT'] )
 def update_stay():
     #Con tener un user_id el sistema se encargará de actualizar la estancia de por si solo
-    end_date = datetime.datetime.today().replace(microsecond=0)
+    end_date = datetime.datetime.today().replace(tzinfo=ZoneInfo("Europe/Madrid"),microsecond=0)
     if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
         uuid = str(request.json['uuid'])
@@ -242,6 +242,7 @@ def stays_room_hours():
         response = json_util.dumps(stays)
  
         return Response(response,mimetype = "application/json")
+    
     else:
         response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
         return response
