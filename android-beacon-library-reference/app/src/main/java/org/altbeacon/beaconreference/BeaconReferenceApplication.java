@@ -53,6 +53,8 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         BeaconManager beaconManager = org.altbeacon.beacon.BeaconManager.getInstanceForApplication(this);
         beaconManager.getBeaconParsers().add(new BeaconParser().
                 setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+        SplashActivity.id(this.getApplicationContext());
+        uuid = SplashActivity.getDevId();
         // By default the AndroidBeaconLibrary will only find AltBeacons.  If you wish to make it
         // find a different type of beacon, you must specify the byte layout for that beacon's
         // advertisement with a line like below.  The example shows how to find a beacon with the
@@ -79,7 +81,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         builder.setContentTitle("Scanning for Beacons");
         Intent intent = new Intent(this, MonitoringActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
         );
         builder.setContentIntent(pendingIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -179,7 +181,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         (Response.ErrorListener) error -> {
             // make a Toast telling the user
             // that something went wrong
-            Toast.makeText(BeaconReferenceApplication.this, "Some error occurred! Cannot fetch dog image", Toast.LENGTH_LONG).show();
+            Toast.makeText(BeaconReferenceApplication.this, "Ha ocurrido un error al guardar la estancia", Toast.LENGTH_LONG).show();
             // log the error message in the error stream
             Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
         });
@@ -210,7 +212,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
                 (Response.ErrorListener) error -> {
                     // make a Toast telling the user
                     // that something went wrong
-                    Toast.makeText(BeaconReferenceApplication.this, "Some error occurred!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(BeaconReferenceApplication.this, "Ha ocurrido un error al modificar la estancia" , Toast.LENGTH_LONG).show();
                     // log the error message in the error stream
                     Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
                 });

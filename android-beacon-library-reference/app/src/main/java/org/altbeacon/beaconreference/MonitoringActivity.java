@@ -179,6 +179,14 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		}
 	}
 
+	public void onHistoryClicked(View view){
+		Intent myIntent = new Intent(this, HistoryActivity.class);
+		this.startActivity(myIntent);
+	}
+
+
+
+
 	public void onRangingClicked(View view) {
 		Intent myIntent = new Intent(this, RangingActivity.class);
 		this.startActivity(myIntent);

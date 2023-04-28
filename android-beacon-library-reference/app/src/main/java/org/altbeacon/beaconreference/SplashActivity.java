@@ -65,6 +65,7 @@ public class SplashActivity extends Activity {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.splash);
             id(this.getApplicationContext());
+            BeaconReferenceApplication.setUuid(uniqueID);
         }
     }
 
@@ -108,7 +109,7 @@ public class SplashActivity extends Activity {
                 (Response.ErrorListener) error -> {
                     // make a Toast telling the user
                     // that something went wrong
-                    Toast.makeText(SplashActivity.this, "Some error occurred!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(SplashActivity.this, "Se está reactivando el servidor, vuelve a intentarlo en un minuto", Toast.LENGTH_LONG).show();
                     // log the error message in the error stream
                     Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
                 });
