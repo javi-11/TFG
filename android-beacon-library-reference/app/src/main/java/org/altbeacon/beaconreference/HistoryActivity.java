@@ -72,6 +72,7 @@ public class HistoryActivity extends Activity {
                         JSONObject respuesta = (JSONObject) response.get(cnt);
                         JSONObject date = respuesta.getJSONObject("start_date");
                         String dtAux = (String) date.get("$date");
+
                         Instant instant = Instant.parse(dtAux);
                         ZonedDateTime time = instant.atZone(ZoneId.of("Europe/Madrid"));
 
@@ -93,6 +94,8 @@ public class HistoryActivity extends Activity {
                         }
 
                         historyList.add(cadena);
+
+
                     }
                     listView = (ListView) findViewById(R.id.listaHistorial);
                     mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, historyList);
