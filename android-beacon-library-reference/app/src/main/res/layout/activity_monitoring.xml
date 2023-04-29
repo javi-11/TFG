@@ -40,10 +40,21 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/monitoringText"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="103dp"
+        android:layout_marginLeft="27dp"
+        android:layout_marginTop="102dp"
         android:onClick="onHistoryClicked"
         android:text="Historial" />
+
+    <Button
+        android:id="@+id/historyHoursButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/monitoringText"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="128dp"
+        android:layout_marginTop="102dp"
+        android:onClick="onHistoryHoursClicked"
+        android:text="Filtrar por día y hora" />
 
     <Button
         android:id="@+id/enableButton"

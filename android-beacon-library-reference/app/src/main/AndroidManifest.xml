@@ -17,11 +17,13 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-
+        <activity
+            android:name=".HoursFilterActivity"
+            android:exported="false" />
         <activity
             android:name=".HistoryActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateVisible"/>
+            android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".SplashActivity"
             android:exported="true"

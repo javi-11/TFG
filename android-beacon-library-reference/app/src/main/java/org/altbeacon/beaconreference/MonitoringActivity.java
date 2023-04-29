@@ -184,6 +184,11 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		this.startActivity(myIntent);
 	}
 
+	public void onHistoryHoursClicked(View view){
+		Intent myIntent = new Intent(this, HoursFilterActivity.class);
+		this.startActivity(myIntent);
+	}
+
 
 
 
