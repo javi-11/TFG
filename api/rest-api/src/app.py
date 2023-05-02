@@ -240,10 +240,9 @@ def stays_room_hours():
         h2 = hour2.astimezone(datetime.timezone.utc).isoformat()
     
         
-        stays = mongo.db.stays.find({'room_name': room_name, "start_date":{'$gte' : datetime.datetime.fromisoformat(h1), '$lt' : datetime.datetime.fromisoformat(h2) }})
-        response = json_util.dumps(stays)
+        stays = mongo.db.stays.distinct('uuid',{'room_name': room_name, "start_date":{'$gte' : datetime.datetime.fromisoformat(h1), '$lt' : datetime.datetime.fromisoformat(h2) }})
  
-        return Response(response,mimetype = "application/json")
+        return jsonify({'message' : len(stays)})
     
     else:
         response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
