@@ -81,8 +81,9 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         builder.setContentTitle("Scanning for Beacons");
         Intent intent = new Intent(this, MonitoringActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
+                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         );
+
         builder.setContentIntent(pendingIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("My Notification Channel ID",

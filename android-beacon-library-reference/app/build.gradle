@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 32
-    buildToolsVersion '32.0.0'
+    compileSdkVersion 29
+    buildToolsVersion '29.0.2'
 
     defaultConfig {
         applicationId "org.altbeacon.beaconreference"
-        minSdk 27
-        targetSdk 32
+        minSdkVersion 27
+        targetSdkVersion 29
     }
     buildTypes {
         release {
@@ -19,9 +19,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    buildFeatures {
-        viewBinding true
-    }
+
 }
 
 dependencies {
@@ -32,6 +30,6 @@ dependencies {
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment:2.5.3'
-    implementation 'androidx.navigation:navigation-ui:2.5.3'
+
+
 }
