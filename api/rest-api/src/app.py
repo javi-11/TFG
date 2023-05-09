@@ -96,7 +96,7 @@ def update_rooms(id):
 
 #Módulo de Estancias
 #Necesita el room_name y el user_id para funcionar
-@app.route('/stays', methods =['POST'] )
+@app.route('/stays', methods =['POST'])
 def create_stay():
 
     #Recibiendo como datos room_name y user_id
@@ -320,6 +320,34 @@ def history_room_most_used_perHour():
         return response
 
 
+@app.route('/stays/room/occupation', methods = ['POST'])
+def get_occupation():
+        
+        start_dateAux = datetime.datetime.today().replace(microsecond=0)
+        dt = start_dateAux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+        dt2 = dt - datetime.timedelta(seconds = 10)
+        dtDef2 = dt2.astimezone(datetime.timezone.utc)
+
+        dtDef2 = dtDef2.isoformat()
+
+        salas_str = ['Comedor', 'HF', 'Bar']
+        message = ""
+        for sala in salas_str:
+            #Estancias abiertas y cerradas en los últimos 10 segundos
+            estancias = mongo.db.stays.distinct('uuid',{"$or":[{"room_name":sala, "end_date": {"$exists":False}}, {"room_name":sala, "end_date":{'$gte': datetime.datetime.fromisoformat(dtDef2)}}] })
+            message = message + sala + " " + str(len(estancias)) + " "
+
+        return jsonify({'message' : message})
+
+@app.route('/stays/close', methods = ['POST'])
+def debug():
+    start_dateAux = datetime.datetime.today().replace(microsecond=0)
+    dt = start_dateAux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+    dtDef = dt.astimezone(datetime.timezone.utc).isoformat()
+       
+    mongo.db.stays.update_many({'end_date' :{"$exists":False}},
+                                            {'$set':{'end_date': datetime.datetime.fromisoformat(dtDef) }})
+    return jsonify({'message' : "se han cerrado satisfactoriamente todas las entradas"})
 
 
 
