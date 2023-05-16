@@ -159,6 +159,7 @@ def delete_stay(id):
 #Historial
 @app.route('/stays/history', methods = ['POST'])
 def history():
+    
     if 'uuid' in request.json:
         uuid = str(request.json['uuid'])
         stays = mongo.db.stays.find({'uuid' : uuid})
@@ -172,6 +173,7 @@ def history():
 #Historial indicando días
 @app.route('/stays/history/day', methods = ['POST'])
 def history_d():
+
     if 'uuid' in request.json and 'day' in request.json:
         uuid = str(request.json['uuid'])
         ##Conversiones temporales necesarias para poder hacer la comprobacion
@@ -191,6 +193,7 @@ def history_d():
 #Historial indicando horas
 @app.route('/stays/history/hour', methods = ['POST'])
 def history_h():
+    
     ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
     if 'uuid' in request.json and 'hour1' in request.json and 'hour2' in request.json:
         uuid = str(request.json['uuid'])
@@ -220,6 +223,7 @@ def history_h():
 #Indicando una habitación y dos horas devuelve todas las estancias    
 @app.route('/stays/room/hours', methods = ['POST'])
 def stays_room_hours():
+
     ##Toma de entrada dos horas en nuestra zona horaria y al buscar busca por las mismas pero en UTC que es como se guardan en la base de datos
     if 'room_name' in request.json and 'hour1' in request.json and 'hour2' in request.json:
         room_name = str(request.json['room_name'])
@@ -249,6 +253,7 @@ def stays_room_hours():
 #Habitación más utilizada
 @app.route('/stays/room/most_used', methods = ['POST'])
 def history_room_most_used():
+
     if 'day' in request.json:
         ##Conversiones temporales necesarias para poder hacer la comprobacion
         day_aux =  str(request.json['day'])
@@ -329,11 +334,11 @@ def get_occupation():
         dtDef2 = dtDef2.isoformat()
 
         salas_str = ['Comedor', 'HF', 'Bar']
-        message = ""
+        message = {}
         for sala in salas_str:
             #Estancias abiertas y cerradas en los últimos 10 segundos
             estancias = mongo.db.stays.distinct('uuid',{"$or":[{"room_name":sala, "end_date": {"$exists":False}}, {"room_name":sala, "end_date":{'$gte': datetime.datetime.fromisoformat(dtDef2)}}] })
-            message = message + sala + " " + str(len(estancias)) + " "
+            message[sala] = str(len(estancias))
 
         return jsonify({'message' : message})
 
@@ -349,7 +354,7 @@ def get_open():
 #Dadas la sala y el día obtener el aforo de cada hora
 @app.route('/stays/room/occupation_by_hour', methods = ['POST'])
 def history_room_occupation_perHour():
-    if 'day' in request.json and 'room_name':
+    if 'day' in request.json and 'room_name' in request.json:
         ##Conversiones temporales necesarias para poder hacer la comprobacion
         sala = str(request.json['room_name'])
         day_aux =  str(request.json['day'])
@@ -373,7 +378,6 @@ def history_room_occupation_perHour():
             day2 = day2_aux2.isoformat()
 
             dtDef2 = day_aux2.astimezone(ZoneInfo("Europe/Madrid"))
-            print(dtDef2)
 
             estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
             if(dtDef2.hour < 10 ):
@@ -430,6 +434,40 @@ def history_room_stays_perHour():
         return response
 
 
+#Borrado de las estancias
+@app.route('/stays/mean', methods = ['POST'])
+def mean():
+    if 'day' in request.json and 'room_name' in request.json:
+        sala = str(request.json['room_name'])
+        day_aux =  str(request.json['day'])
+        day_a = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
+        contador = 0
+        suma = 0
+        i = 1
+        while i <= 24:
+
+            ##Primera hora de búsqueda en su corresponediente utc para poder realizar bien los filtro en la base de datos
+            day_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i-1)
+            day_aux2 = day_aux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+            day_aux2 = day_aux2.astimezone(datetime.timezone.utc)
+            day = day_aux2.isoformat()
+
+            ##Segunda hora de búsqueda en su correspondiente utc para filtrar los datos entre ambas fechas
+            day2_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i)
+            day2_aux2 = day2_aux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+            day2_aux2 = day2_aux2.astimezone(datetime.timezone.utc)
+            day2 = day2_aux2.isoformat()
+
+            estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
+            if len(estancias) > 0:
+                contador = contador +1
+                suma = suma + len(estancias)
+            i = i + 1
+        return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +" se han tenido en cuenta " + str(contador) + " horas"})
+   
+    else:
+        response = jsonify({'message' : "No enviaste un día o habitación válidos" })
+        return response
 
 #Borrado de las estancias
 @app.route('/stays/close', methods = ['POST'])
