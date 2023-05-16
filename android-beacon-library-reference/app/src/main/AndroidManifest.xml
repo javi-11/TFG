@@ -18,6 +18,15 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".CurrentOccupationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OccupationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StatsActivity"
+            android:exported="false" />
+        <activity
             android:name=".HoursFilterActivity"
             android:exported="false" />
         <activity

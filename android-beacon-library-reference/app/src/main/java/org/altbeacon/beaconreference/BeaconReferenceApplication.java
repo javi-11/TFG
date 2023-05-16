@@ -79,7 +79,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         Notification.Builder builder = new Notification.Builder(this);
         builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setContentTitle("Scanning for Beacons");
-        Intent intent = new Intent(this, MonitoringActivity.class);
+        Intent intent = new Intent(this, SplashActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
         );
@@ -244,7 +244,7 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         }
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntent(new Intent(this, MonitoringActivity.class));
+        stackBuilder.addNextIntent(new Intent(this, SplashActivity.class));
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
                         0,

@@ -54,6 +54,7 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		else {
 			logToDisplay("No beacons are visible.");
 		}
+
 	}
 
 	@Override
@@ -189,8 +190,19 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		this.startActivity(myIntent);
 	}
 
+	public void onStatsClicked(View view){
+		Intent myIntent = new Intent(this, StatsActivity.class);
+		this.startActivity(myIntent);
+	}
 
-
+	public void onOccupationClicked(View view){
+		Intent myIntent = new Intent(this, OccupationActivity.class);
+		this.startActivity(myIntent);
+	}
+	public void onCurrentOccupationClicked(View view){
+		Intent myIntent = new Intent(this, CurrentOccupationActivity.class);
+		this.startActivity(myIntent);
+	}
 
 	public void onRangingClicked(View view) {
 		Intent myIntent = new Intent(this, RangingActivity.class);
