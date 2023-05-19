@@ -23,6 +23,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.altbeacon.beacon.BeaconManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,14 +69,7 @@ public class SplashActivity extends Activity {
             BeaconReferenceApplication.setUuid(uniqueID);
         }
     }
-
-    public void onRegisterClicked(View view) {
-
-    }
-
-    public void onLogInClicked(View view){
-
-    }
+    
 
     public void onAnonymousClicked(View view){
         RequestQueue volleyQueue = Volley.newRequestQueue(SplashActivity.this);
@@ -97,8 +91,11 @@ public class SplashActivity extends Activity {
             BeaconReferenceApplication.setUuid(uniqueID);
             Intent myIntent = new Intent(this, MonitoringActivity.class);
 
+
             token = response.toString();
             this.startActivity(myIntent);
+
+
             try{
                 Log.d("respuesta", response.getString("message"));
             }
