@@ -361,8 +361,8 @@ def history_room_occupation_perHour():
         day_a = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
         
         ##Se comprueba la ocupación de la sala para cada hora para saber cuál es la ocupación en cada hora.
-        cadena = ""
         i = 1
+        message = {}
         while i <= 24:
 
             ##Primera hora de búsqueda en su corresponediente utc para poder realizar bien los filtro en la base de datos
@@ -381,13 +381,16 @@ def history_room_occupation_perHour():
 
             estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
             if(dtDef2.hour < 10 ):
-                    cadena = cadena + "0" + str(dtDef2.hour) + ":" + "0" + str(dtDef2.minute) +" - " + str(len(estancias)) + " personas."
+                    hora = "0" + str(dtDef2.hour) + ":" + "0" + str(dtDef2.minute)
+                    message[hora] = str(len(estancias)) 
             else:
-                    cadena = cadena  + str(dtDef2.hour) + ":" + "0" + str(dtDef2.minute) +" - " + str(len(estancias)) + " personas."
+                    hora =  str(dtDef2.hour) + ":" + "0" + str(dtDef2.minute)
+                    message[hora] = str(len(estancias)) 
+
             i = i + 1
 
 
-        return jsonify({'message' : "Esta es la ocupación de " + sala + " durante el día solicitado: "+ cadena})
+        return jsonify({'message' : message})
     else:
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
