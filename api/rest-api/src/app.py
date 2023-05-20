@@ -436,8 +436,7 @@ def history_room_stays_perHour():
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
 
-
-#Borrado de las estancias
+"Media de personas por día"
 @app.route('/stays/mean', methods = ['POST'])
 def mean():
     if 'day' in request.json and 'room_name' in request.json:
@@ -466,7 +465,7 @@ def mean():
                 contador = contador +1
                 suma = suma + len(estancias)
             i = i + 1
-        return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +" se han tenido en cuenta " + str(contador) + " horas"})
+        return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +", se han tenido en cuenta " + str(contador) + " horas"})
    
     else:
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })

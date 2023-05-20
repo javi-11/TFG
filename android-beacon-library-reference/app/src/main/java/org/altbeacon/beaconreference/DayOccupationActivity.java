@@ -41,9 +41,11 @@ public class DayOccupationActivity extends Activity {
     public void Filter(View view) {
         RequestQueue volleyQueue = Volley.newRequestQueue(DayOccupationActivity.this);
         String url = "https://tfg-u3xd.onrender.com/stays/room/occupation_by_hour";
+        String url2 = "https://tfg-u3xd.onrender.com/stays/mean";
         JSONObject entrada = new JSONObject();
         EditText input = (EditText) findViewById(R.id.dayFilter);
         TextView oc = (TextView) findViewById(R.id.occupation);
+        TextView oc2 = (TextView) findViewById(R.id.mean);
         EditText room_name = (EditText) findViewById(R.id.roomNameText);
         if (isValidDate(input.getText().toString())) {
             try {
@@ -55,8 +57,6 @@ public class DayOccupationActivity extends Activity {
 
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, entrada
                     , (Response.Listener<JSONObject>) response -> {
-
-
                 try {
                     String cadena = "";
                     String cadenab = response.getJSONObject("message").toString();
@@ -91,7 +91,30 @@ public class DayOccupationActivity extends Activity {
                         // log the error message in the error stream
                         Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
                     });
+            JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest(Request.Method.POST, url2, entrada
+                    , (Response.Listener<JSONObject>) response -> {
+
+                String cadena = null;
+                try {
+                    cadena = response.get("message").toString();
+                    oc2.setText(cadena);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+            },
+                    (Response.ErrorListener) error -> {
+                        // make a Toast telling the user
+                        // that something went wrong
+                        Toast.makeText(DayOccupationActivity.this, "Se está reactivando el servidor, vuelve a intentarlo en un minuto", Toast.LENGTH_LONG).show();
+                        // log the error message in the error stream
+                        Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
+                    });
+
+
+
             volleyQueue.add(jsonObjectRequest);
+            volleyQueue.add(jsonObjectRequest2);
         } else {
             Toast.makeText(this, "La fecha no tiene un formato adecuado, por favor introduce una fecha con el formato YYYY-MM-DD", Toast.LENGTH_SHORT).show();
 
