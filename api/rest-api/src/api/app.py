@@ -1,10 +1,8 @@
 
 import datetime
 from zoneinfo import ZoneInfo
-import zoneinfo
 from flask import Flask, request, jsonify, Response, make_response
-from flask_pymongo import PyMongo 
-from bson import DatetimeConversion, json_util
+from bson import  json_util
 from bson.objectid import ObjectId
 import pymongo
 from pymongo import MongoClient
@@ -16,13 +14,33 @@ from functools import wraps
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = "a"
-app.config["MONGO_URI"] = "mongodb+srv://javit:<f6dFZDZsA4M0rTz8>@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority"
-
 client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority",server_api=ServerApi('1'))
 
 mongo = client.test
 
+def create_app(test):
+    if test==True:
+        
+        global mongo 
+        mongo = client.tfg 
+        return app
+    else:
+        mongo = client.test
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except Exception as e:
+        print(e)
+    with app.app_context():
+        mongo.db.users.create_index('uuid', unique = True)
+        mongo.db.users.create_index(("username"), unique = True, sparse = True)
+        mongo.db.users.create_index(("email"), unique = True, sparse = True) 
+    app.run(debug = True)
+
+def clear_app():
+    mongo = client.tfg 
+    mongo.drop_collection("db.stays")
+       
 
 def token_required(f):
     @wraps(f)
@@ -38,61 +56,6 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-#Esto será para la creación de habitaciones
-'''
-@app.route('/rooms', methods =['POST'] )
-def create_room():
-
-    #Recibiendo datos
-
-    if 'name' in request.json:
-        name = request.json['name']
-        id = mongo.db.rooms.insert_one({'name' : name})
-        response = {
-            'id' : str(id),
-            'name' : name
-        } 
-
-        return response
-
-    else:
-        return not_found()
-
-@app.route('/rooms', methods=['GET'])
-def list_rooms():
-    users = mongo.db.rooms.find()
-    response = json_util.dumps(users)
-    #Lo de abajo indica que la repuesta es un archivo json
-    return Response(response, mimetype='application/json')
-
-@app.route('/rooms/<id>', methods = ['GET'])
-def get_room(id):
-    room = mongo.db.rooms.find_one({'_id' : ObjectId(id)})
-    #Se convierte en un json
-    response = json_util.dumps(room)
-    return Response(response,mimetype = "application/json")
-
-@app.route('/rooms/<id>', methods = ['DELETE'])
-def delete_room(id):
-    mongo.db.rooms.delete_one({'_id' : ObjectId(id)})
-    response = jsonify({'message' : 'La habitación con el id ' + id + ' fue eliminada satisfactoriamente'})
-    return response
-
-@app.route('/rooms/<id>', methods = ['PUT'])
-def update_rooms(id):
-    if 'name' in request.json:
-        name = request.json['name']
-        mongo.db.rooms.update_one({'_id' : ObjectId(id)}, {'$set':{'name': name}})
-
-        response = jsonify({'message' : 'Habitación' + id + 'modificada satisfactoriamente'})
-
-
-        return response
-
-    else:
-        return not_found() 
-'''
-
 
 #Módulo de Estancias
 #Necesita el room_name y el user_id para funcionar
@@ -100,7 +63,6 @@ def update_rooms(id):
 def create_stay():
 
     #Recibiendo como datos room_name y user_id
-
     if 'room_name' in request.json and 'uuid' in request.json:
         room_name = str(request.json['room_name'])
         uuid = str(request.json['uuid'])
@@ -123,7 +85,7 @@ def create_stay():
         return response
 
     else:
-        return not_found()
+        return invalid()
 
 @app.route('/stays', methods=['GET'])
 def list_stays():
@@ -153,6 +115,7 @@ def update_stay():
 
 @app.route('/stays/<id>', methods=['DELETE'])
 def delete_stay(id):
+    print(mongo)
     mongo.db.stays.delete_one({'_id':ObjectId(id)})
     response = jsonify({'message' : 'La estancia con el id ' + id + ' fue eliminada satisfactoriamente'})
     return response
@@ -618,19 +581,18 @@ def not_found(error = None):
     response.status_code=404
     return response
 
-
+@app.errorhandler(400)
+def invalid(error = None):
+    response = jsonify({
+        'message' : 'Resource not found: ' + request.url,
+        'status' : 400
+    })
+    response.status_code=400
+    return response
 
 if __name__ == "__main__":
-
-    try:
-        client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
-    except Exception as e:
-        print(e)
-    with app.app_context():
-        mongo.db.users.create_index('uuid', unique = True)
-        mongo.db.users.create_index(("username"), unique = True, sparse = True)
-        mongo.db.users.create_index(("email"), unique = True, sparse = True) 
-    app.run(debug = True)
+    create_app(False)
+    
 
   
+
