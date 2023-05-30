@@ -295,10 +295,11 @@ def get_occupation():
         
         start_dateAux = datetime.datetime.today().replace(microsecond=0)
         dt = start_dateAux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
-        dt2 = dt - datetime.timedelta(seconds = 10)
+        dt2 = dt - datetime.timedelta(seconds = 10) + datetime.timedelta(hours = 2)
         dt2.replace(tzinfo=ZoneInfo("Europe/Madrid"))
 
         dtDef2 = dt2.isoformat()
+
 
         salas_str = ['Comedor', 'HF', 'Bar']
         message = {}
@@ -307,7 +308,7 @@ def get_occupation():
             #Estancias abiertas y cerradas en los últimos 10 segundos
             estancias = mongo.db.stays.distinct('uuid',{"$or":[{"room_name":sala, "end_date": {"$exists":False}}, {"room_name":sala, "end_date":{'$gte': datetime.datetime.fromisoformat(dtDef2)}}] })
             message[sala] = str(len(estancias))
-
+            print(estancias)
         return jsonify({'message' : message})
 
 
