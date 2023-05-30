@@ -297,9 +297,8 @@ def get_occupation():
         dt = start_dateAux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
         dt2 = dt - datetime.timedelta(seconds = 10)
         dt2.replace(tzinfo=ZoneInfo("Europe/Madrid"))
-        dtDef2 = dt2.astimezone(datetime.timezone.utc)
 
-        dtDef2 = dtDef2.isoformat()
+        dtDef2 = dt2.isoformat()
 
         salas_str = ['Comedor', 'HF', 'Bar']
         message = {}
