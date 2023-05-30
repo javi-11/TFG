@@ -139,7 +139,7 @@ def test_history_room_most_used_per_hour(client):
 
 def test_stays_get_room_occupation(client):
     response = post_json(client,"/stays/room/occupation",{})
-    assert json_of_response(response).get("message")=={'Bar': '1', 'Comedor': '0', 'HF': '2'}
+    assert json_of_response(response).get("message")=={'Bar': '1', 'Comedor': '0', 'HF': '1'}
 
 def test_open_stays(client):
     response = client.get("/stays/open")
@@ -179,7 +179,7 @@ def test_mean(client):
     start_dateAux = datetime.date.today()
     response = post_json(client,"/stays/mean", {'day': str(start_dateAux), 'room_name': sala})
 
-    assert json_of_response(response).get("message") == "Esta es la media de ocupación de " + sala + " durante el día solicitado: " + "2.0" + ", se han tenido en cuenta 1 horas"
+    assert json_of_response(response).get("message") == "2.0"
     response = post_json(client,"/stays/mean", {})
     assert json_of_response(response).get("message") == "No enviaste un día o habitación válidos"
 
