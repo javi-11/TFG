@@ -204,6 +204,11 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		this.startActivity(myIntent);
 	}
 
+	public void onDayOccupationClicked(View view){
+		Intent myIntent = new Intent(this, DayOccupationActivity.class);
+		this.startActivity(myIntent);
+	}
+
 	public void onRangingClicked(View view) {
 		Intent myIntent = new Intent(this, RangingActivity.class);
 		this.startActivity(myIntent);
@@ -274,5 +279,6 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
     	    }
     	});
     }
+
 
 }
