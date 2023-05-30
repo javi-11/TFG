@@ -435,9 +435,9 @@ def mean():
                 suma = suma + len(estancias)
             i = i + 1
         if(contador == 0):
-            return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: 0, se han tenido en cuenta " + str(contador) + " horas"})
+            return jsonify({'message' : "0" })
         else:
-            return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +", se han tenido en cuenta " + str(contador) + " horas"})
+            return jsonify({'message' : str(suma/contador)})
    
     else:
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
