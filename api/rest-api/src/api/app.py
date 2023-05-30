@@ -13,16 +13,19 @@ from functools import wraps
 
 
 app = Flask(__name__)
-
+app.config["SECRET_KEY"] = "key"
 client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority",server_api=ServerApi('1'))
 
 mongo = client.test
 
 def create_app(test):
     if test==True:
-        
         global mongo 
         mongo = client.tfg 
+        with app.app_context():
+            mongo.db.users.create_index('uuid', unique = True)
+            mongo.db.users.create_index("username", unique = True, sparse = True)
+            mongo.db.users.create_index("email", unique = True, sparse = True) 
         return app
     else:
         mongo = client.test
@@ -33,13 +36,14 @@ def create_app(test):
         print(e)
     with app.app_context():
         mongo.db.users.create_index('uuid', unique = True)
-        mongo.db.users.create_index(("username"), unique = True, sparse = True)
-        mongo.db.users.create_index(("email"), unique = True, sparse = True) 
+        mongo.db.users.create_index("username", unique = True, sparse = True)
+        mongo.db.users.create_index("email", unique = True, sparse = True) 
     app.run(debug = True)
 
 def clear_app():
     mongo = client.tfg 
     mongo.drop_collection("db.stays")
+    mongo.drop_collection("db.users")
        
 
 def token_required(f):
@@ -111,7 +115,7 @@ def update_stay():
             response = jsonify({'message' : "Ya hay una estancia creada sin cerrar"})
             return response
     else:
-        return not_found()
+        return invalid()
 
 @app.route('/stays/<id>', methods=['DELETE'])
 def delete_stay(id):
@@ -119,6 +123,7 @@ def delete_stay(id):
     mongo.db.stays.delete_one({'_id':ObjectId(id)})
     response = jsonify({'message' : 'La estancia con el id ' + id + ' fue eliminada satisfactoriamente'})
     return response
+
 #Historial
 @app.route('/stays/history', methods = ['POST'])
 def history():
@@ -133,6 +138,7 @@ def history():
     else:
         response = jsonify({'message' : "No enviaste un identificador válido" })
         return response
+    
 #Historial indicando días
 @app.route('/stays/history/day', methods = ['POST'])
 def history_d():
@@ -252,8 +258,6 @@ def history_room_most_used_perHour():
         salas = {'Comedor':0,'HF':0,'Bar':0}
         horas = {'Comedor':0, 'HF':0, 'Bar' : 0}
         horas2 = {'Comedor':0, 'HF':0, 'Bar' : 0}
-    
-
         #Se comprueba la ocupación en cada sala para cada hora para saber cuál es la ocupación máxima y en qué hora se ha producido la misma.
         for sala in salas_str:
             i = 1
@@ -276,11 +280,11 @@ def history_room_most_used_perHour():
         cadena = ""
         for sala in salas_str:
             if salas[sala] > 0:
-                cadena = cadena + " " + sala + " - " + str(salas[sala]) + " personas - " + str(horas[sala]) + "-" +str(horas2[sala])+". "
+                cadena = cadena + sala + " - " + str(salas[sala]) + " personas - " + str(horas[sala]) + "-" +str(horas2[sala])+". "
             else:
-                cadena = cadena + " No ha habido nadie en " + sala +"."
+                cadena = cadena + " No ha habido nadie en " + sala +". "
 
-        return jsonify({'message' : "Esta fue la hora con mayor número de personas para cada sala: "+ cadena})
+        return jsonify({'message' : "Esta fue la hora con mayor número de personas para cada sala:"+ cadena})
     else:
         response = jsonify({'message' : "No enviaste un identificador o fecha válidos" })
         return response
@@ -358,7 +362,6 @@ def history_room_occupation_perHour():
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
 
-
 #Dadas la sala y el día obtener que uuid han estado en cada hora
 @app.route('/stays/room/getByRoomAndDay', methods = ['POST'])
 def history_room_stays_perHour():
@@ -369,7 +372,7 @@ def history_room_stays_perHour():
         day_a = datetime.datetime.strptime(day_aux, '%Y-%m-%d').date()
         
         ##Se comprueba la ocupación de la sala para cada hora para saber cuál es la ocupación en cada hora.
-        cadena = ""
+        dct ={}
         i = 1
         while i <= 24:
 
@@ -386,15 +389,18 @@ def history_room_stays_perHour():
             day2 = day2_aux2.isoformat()
 
             dtDef2 = day_aux2.astimezone(ZoneInfo("Europe/Madrid"))
-            print(dtDef2)
 
             estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
-            cadena = cadena + str(dtDef2.hour) + str(dtDef2.minute) +" - " + str(len(estancias)) + " personas." +"\n"
+            "Poner bien la hora"
+            if dtDef2.hour<10:
+                hour = "0" + str(dtDef2.hour)
+            else:
+                hour = str(dtDef2.hour)
+
             i = i + 1
-            cadena = cadena +  json_util.dumps(estancias)
-
-
-        return Response(cadena, mimetype="application/json" )
+            dct[hour] = json_util.dumps(estancias)
+         
+        return jsonify({"message" : dct })
     else:
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
@@ -428,13 +434,16 @@ def mean():
                 contador = contador +1
                 suma = suma + len(estancias)
             i = i + 1
-        return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +", se han tenido en cuenta " + str(contador) + " horas"})
+        if(contador == 0):
+            return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: 0, se han tenido en cuenta " + str(contador) + " horas"})
+        else:
+            return jsonify({'message' : "Esta es la media de ocupación de " + sala + " durante el día solicitado: "+ str(suma/contador) +", se han tenido en cuenta " + str(contador) + " horas"})
    
     else:
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
 
-#Borrado de las estancias
+#Cerrado de las estancias
 @app.route('/stays/close', methods = ['POST'])
 def debug():
     start_dateAux = datetime.datetime.today().replace(microsecond=0)
@@ -443,7 +452,7 @@ def debug():
        
     mongo.db.stays.update_many({'end_date' :{"$exists":False}},
                                             {'$set':{'end_date': datetime.datetime.fromisoformat(dtDef) }})
-    return jsonify({'message' : "se han cerrado satisfactoriamente todas las entradas"})
+    return jsonify({'message' : "Se han cerrado satisfactoriamente todas las entradas"})
 
 
 
@@ -467,7 +476,7 @@ def create_users():
             user = mongo.db.users.find_one({'uuid' : uuid})
             if user and user['type'] == 'Anonymous':
                 id = mongo.db.users.update_one({'uuid' : uuid},{'$set':{'type':'User', 'uuid':uuid, 'username':username, 'password': enc_password, 'email':email}})
-                response = jsonify({'message' : 'Usuario con id ' + str(id) + ' creado satisfactoriamente'})
+                response = jsonify({'message' : 'Usuario con id ' + str(id) + ' modificado satisfactoriamente'})
                 return response
             else:
                 id = mongo.db.users.insert_one({'uuid' : uuid,'type':'User','username' : username, 'password' : enc_password, 'email' : email})
@@ -502,7 +511,7 @@ def create_users():
         return response
     
     else:
-        return not_found()
+        return invalid()
     
 ##Login para usuarios con cuenta   
 @app.route('/login', methods = ["POST"])
@@ -512,8 +521,10 @@ def login():
         password = request.json['password']
         user = mongo.db.users.find_one({'username':username})     
         user_psw = user['password']
+        print(user)
         if check_password_hash(user_psw,password):
-            token = jwt.encode({'user': username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+            token = jwt.encode({'user': username, 'exp' : str(datetime.datetime.utcnow() + datetime.timedelta(minutes = 30))}, app.config['SECRET_KEY'])
+            print(token)
             return jsonify({'token' : token})
 
         return make_response('could not verify!', 401,{'WWW-Authenticate' : 'Basic realm = "Login required"'})
@@ -530,14 +541,10 @@ def login_anonymous():
         else:
             mongo.db.users.insert_one({'uuid' : uuid,'type':'Anonymous'})
             token = jwt.encode({'uuid': uuid, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)}, app.config['SECRET_KEY'])
-            return jsonify({'token' : token})
+            return jsonify({'token' : token, 'message' : "Además se ha creado un usuario anónimo para este dispositivo"})
     else:
         return jsonify({'message': "Debes enviar tu identificador"})
         
-
-
-
-
 @app.route('/users', methods=['GET'])
 def list_users():
     users = mongo.db.users.find()
