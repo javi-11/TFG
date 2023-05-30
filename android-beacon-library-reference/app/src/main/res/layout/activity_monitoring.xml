@@ -158,6 +158,21 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.82" />
 
+    <Button
+        android:id="@+id/notificacion"
+        android:layout_width="209dp"
+        android:layout_height="52dp"
+        android:layout_below="@+id/StatsButton"
+        android:layout_alignParentLeft="true"
+        android:onClick="onNotificationClicked"
+        android:text="Notificación"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.924" />
+
     <TextView
         android:id="@+id/uuid"
         android:layout_width="wrap_content"

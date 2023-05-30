@@ -213,6 +213,12 @@ public class MonitoringActivity extends Activity implements MonitorNotifier {
 		Intent myIntent = new Intent(this, RangingActivity.class);
 		this.startActivity(myIntent);
 	}
+
+	public void onNotificationClicked(View view) {
+		Intent myIntent = new Intent(this, NotificationActivity.class);
+		this.startActivity(myIntent);
+	}
+
 	public void onEnableClicked(View view) {
 		// This is a toggle.  Each time we tap it, we start or stop
 		Button button = (Button) findViewById(R.id.enableButton);
