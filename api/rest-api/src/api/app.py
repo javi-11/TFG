@@ -404,7 +404,7 @@ def history_room_stays_perHour():
         response = jsonify({'message' : "No enviaste un día o habitación válidos" })
         return response
 
-"Media de personas por día"
+##Media de personas por día
 @app.route('/stays/mean', methods = ['POST'])
 def mean():
     if 'day' in request.json and 'room_name' in request.json:

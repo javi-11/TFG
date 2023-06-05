@@ -97,7 +97,7 @@ public class DayOccupationActivity extends Activity {
                 String cadena = null;
                 try {
                     cadena = response.get("message").toString();
-                    oc2.setText(cadena);
+                    oc2.setText("La media de ocupación de " + room_name.getText().toString() + " durante el día " +input.getText().toString()+ " fue de " + cadena +" personas.");
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
