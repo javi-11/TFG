@@ -55,7 +55,6 @@ public class NotificationActivity extends Activity {
 
         Notification_aux repeatTask = new Notification_aux(this,room_name,n_personas);
         scheduledFuture = executor.scheduleAtFixedRate(repeatTask,0, 5, TimeUnit.MINUTES);
-        //executor.execute(repeatTask);
     }
     public static void stopScheduledTask(){
         if (scheduledFuture != null) {

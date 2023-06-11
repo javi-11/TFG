@@ -61,9 +61,8 @@ public class Notification_aux implements Runnable {
         sendNotification(cadena);
     }
     private void haOcurridoAlgo() {
-        //Toast.makeText(this.mContext, "A", Toast.LENGTH_LONG).show();
+
         Double factor = cantidad_personas * media;
-        //Toast.makeText(this.mContext, "Ocupación actual: " +ocupacion_actual +" facto " +factor.toString() + " Multiplicador sobre media: " + cantidad_personas.toString()+ "  media" + media.toString(),  Toast.LENGTH_LONG).show();
         this.factor = factor;
         if(ocupacion_actual <= cantidad_personas * media){
             terminado = true;
@@ -197,9 +196,7 @@ public class Notification_aux implements Runnable {
     }
 
     public void ejec(){
-        //Toast.makeText(this.mContext, terminado +"Aquí estoy", Toast.LENGTH_LONG).show();
         //Se ejecuta si es falso y no han pasado 30 min
-        //ejecutarCodigo("Se ha lanzado la app: media: " + media.toString() + ", actual: " + ocupacion_actual.toString() );
 
         if (terminado != true && this.i < 6) {
             i = i+1;

@@ -2,15 +2,15 @@ import json
 import datetime
 
 def post_json(client, url, json_dict):
-    """Send dictionary json_dict as a json to the specified url """
+    
     return client.post(url, data=json.dumps(json_dict), content_type='application/json')
 
 def put_json(client, url, json_dict):
-    """Send dictionary json_dict as a json to the specified url """
+    
     return client.put(url, data=json.dumps(json_dict), content_type='application/json')
 
 def json_of_response(response):
-    """Decode json from response"""
+    
     return json.loads(response.data.decode('utf8'))
 
 def test_create_stay(client):
@@ -59,11 +59,12 @@ def test_history(client):
 
 def test_history_d(client):
     start_dateAux = datetime.date.today()
+    start_dateAux2 = start_dateAux + datetime.timedelta(days=1)
     rsp = post_json(client, "/stays/history/day", {'uuid':'1','day':str(start_dateAux)})
 
     assert len(json_of_response(rsp)) == 1
 
-    rsp = post_json(client, "/stays/history/day", {'uuid':'3','day':str(start_dateAux)})
+    rsp = post_json(client, "/stays/history/day", {'uuid':'1','day':str(start_dateAux2)})
     assert len(json_of_response(rsp)) == 0
 
     rsp2 = post_json(client, "/stays/history/day", {})
@@ -74,11 +75,13 @@ def test_history_h(client):
     start_date = start_dateAux - datetime.timedelta(hours=1)
     start_date = start_date.isoformat().replace("T", " ")
     end_date = start_dateAux + datetime.timedelta(hours=1)
-    end_date = end_date.isoformat().replace("T", " ") 
+    end_date = end_date.isoformat().replace("T", " ")
+    start_date2 = start_dateAux + datetime.timedelta(hours=1)
+    end_date2 = start_dateAux + datetime.timedelta(hours=2)
     rsp = post_json(client, "/stays/history/hour", {'uuid':'1','hour1':str(start_date), 'hour2':str(end_date)})
     assert len(json_of_response(rsp)) == 1
 
-    rsp = post_json(client, "/stays/history/hour", {'uuid':'3', 'hour1':str(start_date), 'hour2' : str(end_date)})
+    rsp = post_json(client, "/stays/history/hour", {'uuid':'1', 'hour1':str(start_date2), 'hour2' : str(end_date2)})
     assert len(json_of_response(rsp)) == 0
 
     rsp2 = post_json(client, "/stays/history/hour", {})
@@ -165,13 +168,12 @@ def test_history_room_stays_perHour(client):
     start_datetimeAux = datetime.datetime.now().replace(microsecond=0)
     #start_datetime = start_datetimeAux.isoformat().replace("T", " ")
     response = post_json(client,"/stays/room/getByRoomAndDay", {'day': str(start_dateAux), 'room_name': 'HF'})
-    print(json_of_response(response))
+
     hora = start_datetimeAux.hour
     if hora < 10:
         hora = "0" + str(hora)
     else:
         hora = str(hora)
-    print()
     assert json_of_response(response).get("message").get(hora) == '["1", "2"]'
 
 def test_mean(client):
@@ -224,7 +226,7 @@ def test_create_user(client):
 
 def test_login(client):
     response = post_json(client,"/login", {'username' : 'raul123', 'password': 'contraseña1'})
-    print(json_of_response(response))
+
     assert json_of_response(response).get("token") != ""
   
 def test_login_anonnymous(client):
@@ -239,13 +241,13 @@ def test_login_anonnymous(client):
 def test_get_user_by_id(client):
     response = client.get("/users")
     assert len(json_of_response(response)) == 3
-    print(json_of_response(response)[0])
+
     response = client.get("/users/"+str(json_of_response(response)[0]["_id"]['$oid']))
     assert json_of_response(response)["uuid"] == "1"
 
 def test_get_user_by_uuid(client):
     response = client.get("/users/device/1")
-    print(json_of_response(response))
+
     assert json_of_response(response)["uuid"] == "1"
     assert json_of_response(response)["username"] == "raul123"
 

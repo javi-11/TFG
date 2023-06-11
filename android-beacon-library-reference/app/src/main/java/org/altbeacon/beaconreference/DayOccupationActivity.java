@@ -116,7 +116,8 @@ public class DayOccupationActivity extends Activity {
             volleyQueue.add(jsonObjectRequest);
             volleyQueue.add(jsonObjectRequest2);
         } else {
-            Toast.makeText(this, "La fecha no tiene un formato adecuado, por favor introduce una fecha con el formato YYYY-MM-DD", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "La fecha no tiene un formato adecuado, por favor introduce" +
+                    " una fecha con el formato YYYY-MM-DD", Toast.LENGTH_SHORT).show();
 
         }
 

@@ -35,9 +35,12 @@ import org.json.JSONObject;
 public class BeaconReferenceApplication extends Application implements MonitorNotifier {
     private static final String TAG = "BeaconReferenceApp";
     //public static final Region wildcardRegion = new Region("wildcardRegion", null,null,null);
-    public static final Region region1 = new Region("HF", Identifier.parse("0xedd1ebeac04e5defa017"),Identifier.parse("0xf8804a959b10"),null);
-    public static final Region region2 = new Region("Bar", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xcfbf822eadf9"),null);
-    public static final Region region3 = new Region("Comedor", Identifier.parse("0xedd1ebeac04e5defa017"), Identifier.parse("0xeed84d40a395"),null);
+    public static final Region region1 = new Region("HF", Identifier.parse("0xedd1ebeac04e5defa017")
+            ,Identifier.parse("0xf8804a959b10"),null);
+    public static final Region region2 = new Region("Bar", Identifier.parse("0xedd1ebeac04e5defa017")
+            , Identifier.parse("0xcfbf822eadf9"),null);
+    public static final Region region3 = new Region("Comedor", Identifier.parse("0xedd1ebeac04e5defa017")
+            , Identifier.parse("0xeed84d40a395"),null);
     public static boolean insideRegion = false;
 
     private static String uuid = null;
@@ -182,7 +185,8 @@ public class BeaconReferenceApplication extends Application implements MonitorNo
         (Response.ErrorListener) error -> {
             // make a Toast telling the user
             // that something went wrong
-            Toast.makeText(BeaconReferenceApplication.this, "Ha ocurrido un error al guardar la estancia", Toast.LENGTH_LONG).show();
+            Toast.makeText(BeaconReferenceApplication.this, "Ha ocurrido un error al guardar la estancia",
+                    Toast.LENGTH_LONG).show();
             // log the error message in the error stream
             Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}");
         });

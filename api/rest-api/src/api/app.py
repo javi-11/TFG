@@ -14,6 +14,7 @@ from functools import wraps
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "key"
+
 client = MongoClient("mongodb+srv://javit:f6dFZDZsA4M0rTz8@cluster0.ejgdxfg.mongodb.net/?retryWrites=true&w=majority",server_api=ServerApi('1'))
 
 mongo = client.test
@@ -235,9 +236,9 @@ def history_room_most_used():
         max_estancias = 0
         sala_def=""
         for sala in salas:
-            estancias = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
-            if len(estancias) > max_estancias:
-                max_estancias = len(estancias)
+            personas = mongo.db.stays.distinct('uuid', {"room_name" : sala , "start_date":{'$gte' : datetime.datetime.fromisoformat(day), '$lt' : datetime.datetime.fromisoformat(day2)}})
+            if len(personas) > max_estancias:
+                max_estancias = len(personas)
                 sala_def=sala
         
         return jsonify({'message' : "La sala más usada fue "+ sala_def + " con " + str(max_estancias) + " estancias."})
@@ -335,7 +336,7 @@ def history_room_occupation_perHour():
             day_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i-1)
             day_aux2 = day_aux.replace(tzinfo=ZoneInfo("Europe/Madrid"))
             day_aux2 = day_aux2.astimezone(datetime.timezone.utc)
-            day = day_aux2.isoformat()
+            day = day_aux2.isoformat()  
 
             ##Segunda hora de búsqueda en su correspondiente utc para filtrar los datos entre ambas fechas
             day2_aux = datetime.datetime.combine(day_a, datetime.datetime.min.time())  + datetime.timedelta(hours = i)
